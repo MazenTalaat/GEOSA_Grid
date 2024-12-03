@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interest vs Influence Chart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+
+        /* Header Styles */
+        #header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+        }
+
+        #header-left,
+        #header-right {
+            flex: 0 0 auto;
+        }
+
+        #header-center {
+            flex: 1 1 auto;
+            text-align: center;
+        }
+
+        #header img {
+            max-height: 80px;
+        }
+
+        /* Main Content Styles */
+        #main-content {
+            display: flex;
+            flex-direction: row;
+        }
+
+        #sidebar {
+            width: 250px;
+            padding: 10px;
+            border-right: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+
+        #chart-container {
+            flex-grow: 1;
+            padding: 10px;
+            position: relative;
+        }
+
+        .name-item {
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+
+        .name-item:hover {
+            text-decoration: underline;
+        }
+
+        .highlighted {
+            color: red;
+        }
+
+        h1, h3 {
+            margin-top: 0;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            #header {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #main-content {
+                flex-direction: column;
+            }
+
+            #sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #ccc;
+            }
+
+            #chart-container {
+                padding: 10px 0;
+                height: 405px;
+            }
+
+            #header-left,
+            #header-right {
+                margin-bottom: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #sidebar {
+                padding: 5px;
+            }
+
+            #chart-container {
+                padding: 5px;
+            }
+
+            .name-item {
+                font-size: 14px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            h3 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <div id="header-left">
+            <a href="https://microengineering.ca/">
+                <img src="meti.png" alt="Left Logo" id="left-logo">
+            </a>
+        </div>
+        <div id="header-center">
+            <h1 id="title">Interest vs Influence Grid for Stakeholders</h1>
+        </div>
+        <div id="header-right">
+            <a href="https://www.geosa.gov.sa/">
+                <img src="geosa.png" alt="Right Logo" id="right-logo">
+            </a>
+        </div>
+    </div>
+    <div id="main-content">
+        <div id="sidebar">
+            <h3>Stakeholders</h3>
+            <div id="name-list">
+                <!-- Names will be populated here -->
+            </div>
+        </div>
+        <div id="chart-container">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Include Chart.js library from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // New data provided by you
+        const data = [
+            { name: 'Google/Waymo', x: 0.875, y: 1 },
+            { name: 'AppleMaps', x: 0.625, y: 0.8 },
+            { name: 'TomTom', x: 1, y: 0.7 },
+            { name: 'BaiduMaps', x: 0.5, y: 0.5 },
+            { name: 'Zenrin', x: 0.75, y: 0.6 },
+            { name: 'HereTechnologies', x: 0.875, y: 0.5 },
+            { name: 'Mapbox', x: 0.625, y: 0.5 },
+            { name: 'LuminarTechnologies', x: 0.75, y: 0.4 },
+            { name: 'Navinfo', x: 0.5, y: 0.4 },
+            { name: 'NVIDIA', x: 0.375, y: 0.6 },
+            { name: 'Tesla', x: 0.375, y: 0.5 },
+            { name: 'WovenbyToyota', x: 0.625, y: 0.2 },
+            { name: 'Nuro', x: 0.375, y: 0.3 },
+            { name: 'Momenta', x: 0.75, y: 0.3 },
+            { name: 'Oxa', x: 0.375, y: 0.4 },
+            { name: 'Wayve', x: 0.5, y: 0.3 },
+            { name: 'Moove.ai', x: 0.625, y: 0.3 },
+            { name: 'Ouster', x: 0.75, y: 0.5 },
+            { name: 'DynamicMapPlatform', x: 0.875, y: 0.4 },
+            { name: 'Bosch', x: 0.875, y: 0.9 },
+            { name: 'PhantomAI', x: 0.5, y: 0.1 },
+            { name: 'Kuangdeng', x: 0.25, y: 0.4 },
+            { name: 'ApolloMapping', x: 0.625, y: 0.4 }
+        ];
+
+        // Populate names in the sidebar
+        const nameList = document.getElementById('name-list');
+        const nameElements = {}; // To keep track of the DOM elements
+
+        data.forEach(company => {
+            const div = document.createElement('div');
+            div.textContent = company.name;
+            div.classList.add('name-item');
+            div.addEventListener('click', () => highlightCompany(company.name));
+            nameList.appendChild(div);
+            nameElements[company.name] = div; // Store reference
+        });
+
+        // Initialize chart data
+        function initializeChartData() {
+            return data.map(company => ({
+                x: company.x,
+                y: company.y,
+                name: company.name,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                radius: 5
+            }));
+        }
+
+        // Create the chart
+        const ctx = document.getElementById('myChart').getContext('2d');
+
+        let scatterChart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Interest vs Influence',
+                    data: initializeChartData(),
+                    backgroundColor: function(context) {
+                        return context.raw.backgroundColor;
+                    },
+                    pointRadius: function(context) {
+                        return context.raw.radius;
+                    }
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Interest',
+                            align: 'end',
+                            padding: { top: 10 },
+                        },
+                        min: 0,
+                        max: 1,
+                        grid: {
+                            color: '#ccc',
+                            lineWidth: 1,
+                        },
+                        ticks: {
+                            beginAtZero: true,
+                            crossAlign: 'center',
+                        },
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Influence',
+                            align: 'center',
+                            padding: { right: 0 },
+                        },
+                        min: 0,
+                        max: 1,
+                        grid: {
+                            color: '#ccc',
+                            lineWidth: 1,
+                        },
+                        ticks: {
+                            beginAtZero: true,
+                            crossAlign: 'center',
+                        },
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const point = context.raw;
+                                return point.name + ': (' + point.x + ', ' + point.y + ')';
+                            }
+                        }
+                    },
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Function to highlight a selected company on the chart and in the list
+        function highlightCompany(name) {
+            // Update chart points
+            scatterChart.data.datasets[0].data.forEach(point => {
+                if (point.name === name) {
+                    point.backgroundColor = 'rgba(255, 99, 132, 1)';
+                    point.radius = 10;
+                } else {
+                    point.backgroundColor = 'rgba(54, 162, 235, 0.6)';
+                    point.radius = 5;
+                }
+            });
+            scatterChart.update();
+
+            // Update sidebar highlighting
+            for (let companyName in nameElements) {
+                if (companyName === name) {
+                    nameElements[companyName].classList.add('highlighted');
+                } else {
+                    nameElements[companyName].classList.remove('highlighted');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
