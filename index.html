@@ -28,7 +28,7 @@
         }
 
         #header img {
-            max-height: 80px;
+            max-height: 80px; /* Logos now have a maximum height of 80px */
         }
 
         /* Main Content Styles */
@@ -116,13 +116,18 @@
                 font-size: 18px;
             }
         }
+
+        /* Optional: Change cursor to pointer when hovering over clickable images */
+        #header a img {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div id="header">
         <div id="header-left">
             <a href="https://microengineering.ca/">
-                <img src="meti.png" alt="Left Logo" id="left-logo">
+                <img src="meti.png" alt="METI Logo" id="left-logo">
             </a>
         </div>
         <div id="header-center">
@@ -130,7 +135,7 @@
         </div>
         <div id="header-right">
             <a href="https://www.geosa.gov.sa/">
-                <img src="geosa.png" alt="Right Logo" id="right-logo">
+                <img src="geosa.png" alt="GeoSA Logo" id="right-logo">
             </a>
         </div>
     </div>
@@ -148,8 +153,13 @@
 
     <!-- Include Chart.js library from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include Chart.js Data Labels plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
     <script>
+        // Register the Data Labels plugin
+        Chart.register(ChartDataLabels);
+
         // New data provided by you
         const data = [
             { name: 'Google/Waymo', x: 0.875, y: 1 },
@@ -270,6 +280,18 @@
                     },
                     legend: {
                         display: false
+                    },
+                    // Configure the Data Labels plugin
+                    datalabels: {
+                        align: 'top',
+                        formatter: function(value, context) {
+                            return value.name;
+                        },
+                        font: {
+                            size: 10,
+                        },
+                        color: '#000', // Label text color
+                        clip: true, // Hide labels that are outside the chart area
                     }
                 }
             }
